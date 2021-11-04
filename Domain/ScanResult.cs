@@ -7,7 +7,20 @@ namespace Domain
 {
     public class ScanResult
     {
-        public int TotalProcessedFiles { get; set; }
+        private static object _locker = new object();
+        private int _totalProcessedFiles = 0;
+
+        public int TotalProcessedFiles
+        {
+            get => _totalProcessedFiles; 
+            set
+            {
+                lock (_locker)
+                {
+                    _totalProcessedFiles = value;
+                }
+            }
+        }
 
         //TODO: think about prop names
         public int TotalJSDetects { get; set; }
@@ -24,18 +37,22 @@ namespace Domain
 
         public static ScanResult operator +(ScanResult first, ScanResult second)
         {
-            ScanResult res = new ScanResult()
+            lock (_locker)
             {
-                TotalProcessedFiles = first.TotalProcessedFiles + second.TotalProcessedFiles,
-                TotalJSDetects = first.TotalJSDetects + second.TotalJSDetects,
-                TotalRMDetects = first.TotalRMDetects + second.TotalRMDetects,
-                TotalRunDLLDetects = first.TotalRunDLLDetects + second.TotalRunDLLDetects,
-                TotalErrors = first.TotalErrors + second.TotalErrors,
-                ErrorMessages = first.ErrorMessages.Concat(second.ErrorMessages).ToList(),
-                ExecutionTime = first.ExecutionTime + second.ExecutionTime
-            };
 
-            return res;
+                ScanResult res = new ScanResult()
+                {
+                    TotalProcessedFiles = first.TotalProcessedFiles + second.TotalProcessedFiles,
+                    TotalJSDetects = first.TotalJSDetects + second.TotalJSDetects,
+                    TotalRMDetects = first.TotalRMDetects + second.TotalRMDetects,
+                    TotalRunDLLDetects = first.TotalRunDLLDetects + second.TotalRunDLLDetects,
+                    TotalErrors = first.TotalErrors + second.TotalErrors,
+                    ErrorMessages = first.ErrorMessages.Concat(second.ErrorMessages).ToList(),
+                    ExecutionTime = first.ExecutionTime + second.ExecutionTime
+                };
+
+                return res;
+            }
         }
 
         public override string ToString()

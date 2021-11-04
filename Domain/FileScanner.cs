@@ -9,30 +9,48 @@ namespace Domain
 {
     public class FileScanner
     {
-        public ScanResult Scan(string path)
+        private static object _locker = new object();
+
+        public string CurrentFile { get; private set; }
+
+        public async Task<ScanResult> ScanAsync(string path)
         {
             var watch = System.Diagnostics.Stopwatch.StartNew();
-            ScanResult res = ScanDirectory(path);
+            ScanResult res = new ScanResult();
+            CurrentFile = path;
+            await Task.Run(() => res = ScanDirectory(path));
             watch.Stop();
             res.ExecutionTime = TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds);
 
             return res;
         }
 
+        public ScanResult Scan(string path)
+        {;
+            ScanResult res = ScanDirectory(path);
+            
+            return res;
+        }
+
         private ScanResult ScanDirectory(string path)
         {
             ScanResult res = new ScanResult();
+            CurrentFile = path;
             try
             {
                 string[] files = Directory.GetFiles(path);
                 res += ScanFiles(files);
                 string[] subdirectories = Directory.GetDirectories(path);
-                foreach(var subdirectory in subdirectories)
+                Parallel.ForEach(subdirectories, subdirectory =>
                 {
-                    res += ScanDirectory(subdirectory);
-                }
+                    var directoryResult = ScanDirectory(subdirectory);
+                    lock (_locker)
+                    {
+                        res += directoryResult;
+                    };
+                });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 res.TotalErrors++;
                 res.ErrorMessages.Add(ex.Message);
@@ -44,41 +62,44 @@ namespace Domain
         private ScanResult ScanFiles(string[] files)
         {
             ScanResult res = new ScanResult();
-            foreach (var file in files)
+            res.TotalProcessedFiles += files.Length;
+            Parallel.ForEach(files, file =>
             {
                 try
                 {
+                    CurrentFile = file;
                     bool isJS = Path.GetExtension(file) == ".js";
-                    // TODO: is it effective and good(or better to use tasks?)
-                    res.TotalProcessedFiles++;
-                    Parallel.ForEach(File.ReadLines(file), line =>
+                    foreach (var line in File.ReadLines(file))
                     {
                         ProcessMalwareType(res, AnalyzeLine(line, isJS));
-                    });
+                    }
                 }
                 catch (Exception ex)
                 {
                     res.TotalErrors++;
                     res.ErrorMessages.Add(ex.Message);
                 }
-            }
+            });
 
             return res;
         }
 
         private void ProcessMalwareType(ScanResult res, MalwareType malwareType)
         {
-            switch (malwareType)
+            lock (_locker)
             {
-                case MalwareType.EvilJS:
-                    res.TotalJSDetects++;
-                    break;
-                case MalwareType.Remover:
-                    res.TotalRMDetects++;
-                    break;
-                case MalwareType.DLLRunner:
-                    res.TotalRunDLLDetects++;
-                    break;
+                switch (malwareType)
+                {
+                    case MalwareType.EvilJS:
+                        res.TotalJSDetects++;
+                        break;
+                    case MalwareType.Remover:
+                        res.TotalRMDetects++;
+                        break;
+                    case MalwareType.DLLRunner:
+                        res.TotalRunDLLDetects++;
+                        break;
+                }
             }
         }
 
