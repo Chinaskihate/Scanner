@@ -15,28 +15,34 @@ namespace CMD
             }
 
             string path = args[0];
+            
             FileScanner fs = new FileScanner();
             var res = fs.ScanAsync(path);
             string scanMessage = string.Empty;
+            int currentLineCursor = Console.CursorTop;
             while (!res.IsCompleted)
             {
                 scanMessage = $"Scanning {fs.CurrentFile}";
                 Console.WriteLine(scanMessage);
                 Thread.Sleep(1000);
-                ClearCurrentConsoleLine(scanMessage.Length);
+                ClearLastConsoleSymbols(scanMessage.Length, currentLineCursor);
             }
             Console.WriteLine();
             Console.WriteLine(res.Result);
             Console.ReadKey();
         }
 
-        public static void ClearCurrentConsoleLine(int len)
+        /// <summary>
+        /// Clear last console symbols.
+        /// </summary>
+        /// <param name="len"> Number of symbols. </param>
+        /// <param name="currentLineCursor"> Remove to this line. </param>
+        public static void ClearLastConsoleSymbols(int len, int currentLineCursor)
         {
-            int currentLineCursor = Console.CursorTop;
-            Console.SetCursorPosition(0, 1);
+            Console.SetCursorPosition(0, currentLineCursor);
             for (int i = 0; i < len; i++)
                 Console.Write(" ");
-            Console.SetCursorPosition(0, 1);
+            Console.SetCursorPosition(0, currentLineCursor);
         }
     }
 }

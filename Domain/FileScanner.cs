@@ -11,8 +11,16 @@ namespace Domain
     {
         private static object _locker = new object();
 
+        /// <summary>
+        /// Current scanning file.
+        /// </summary>
         public string CurrentFile { get; private set; }
 
+        /// <summary>
+        /// Scans directory asynchronously.
+        /// </summary>
+        /// <param name="path"> Path to directory. </param>
+        /// <returns> Scan result(task). </returns>
         public async Task<ScanResult> ScanAsync(string path)
         {
             var watch = System.Diagnostics.Stopwatch.StartNew();
@@ -25,13 +33,11 @@ namespace Domain
             return res;
         }
 
-        public ScanResult Scan(string path)
-        {;
-            ScanResult res = ScanDirectory(path);
-            
-            return res;
-        }
-
+        /// <summary>
+        /// Scans directory.
+        /// </summary>
+        /// <param name="path"> Path to directory. </param>
+        /// <returns> Scan result. </returns>
         private ScanResult ScanDirectory(string path)
         {
             ScanResult res = new ScanResult();
@@ -59,6 +65,11 @@ namespace Domain
             return res;
         }
 
+        /// <summary>
+        /// Scans files.
+        /// </summary>
+        /// <param name="files"> Paths to files. </param>
+        /// <returns> Scan result. </returns>
         private ScanResult ScanFiles(string[] files)
         {
             ScanResult res = new ScanResult();
@@ -84,6 +95,11 @@ namespace Domain
             return res;
         }
 
+        /// <summary>
+        /// Processes malware type, change scan result if needed.
+        /// </summary>
+        /// <param name="res"> Scan result. </param>
+        /// <param name="malwareType"> Malware type. </param>
         private void ProcessMalwareType(ScanResult res, MalwareType malwareType)
         {
             lock (_locker)
@@ -91,7 +107,7 @@ namespace Domain
                 switch (malwareType)
                 {
                     case MalwareType.EvilJS:
-                        res.TotalJSDetects++;
+                        res.TotalEvilJSDetects++;
                         break;
                     case MalwareType.Remover:
                         res.TotalRMDetects++;
@@ -103,6 +119,12 @@ namespace Domain
             }
         }
 
+        /// <summary>
+        /// Analyze line for suspicious strings. 
+        /// </summary>
+        /// <param name="line"> Line. </param>
+        /// <param name="isJS"> If file is javascript. </param>
+        /// <returns> Malware type. </returns>
         private MalwareType AnalyzeLine(string line, bool isJS)
         {
             if (isJS)
@@ -126,17 +148,32 @@ namespace Domain
             return MalwareType.SafeFile;
         }
 
+        /// <summary>
+        /// Check line for evil javascript.
+        /// </summary>
+        /// <param name="line"> Line. </param>
+        /// <returns></returns>
         private bool IsEvilJS(string line)
         {
             return line.Contains("<script>evil_script()</script>");
         }
 
+        /// <summary>
+        /// Check line for rm -rf commands.
+        /// </summary>
+        /// <param name="line"> Line. </param>
+        /// <returns></returns>
         private bool IsRemover(string line)
         {
             // TODO: should it be same path at remove command as current directory
             return line.Contains("rm -rf ");
         }
 
+        /// <summary>
+        /// Check line for  Rundll32 sus.dll SusEntry commands.
+        /// </summary>
+        /// <param name="line"> Line. </param>
+        /// <returns></returns>
         private bool IsDLLRunner(string line)
         {
             return line.Contains("Rundll32 sus.dll SusEntry");
