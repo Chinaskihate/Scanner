@@ -13,8 +13,8 @@ namespace API.Controllers
     {
         private static ScannersManager _scannersManager = new ScannersManager();
 
-        [HttpGet("get-task-status")]
-        public IActionResult GetTaskStatus([FromQuery] int id)
+        [HttpGet("get-scan-status")]
+        public IActionResult GetScanStatus([FromQuery] int id)
         {
             try
             {
@@ -26,7 +26,7 @@ namespace API.Controllers
             }
         }
 
-        [HttpPost("create-scan")]
+        [HttpGet("create-scan")]
         public IActionResult CreateScan([FromQuery] string path)
         {
             int id = _scannersManager.CreateScan(path);
