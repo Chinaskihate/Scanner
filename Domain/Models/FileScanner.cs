@@ -5,11 +5,11 @@ using System.Text;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Domain
+namespace Domain.Models
 {
     public class FileScanner
     {
-        private static object _locker = new object();
+        private object _locker = new object();
 
         /// <summary>
         /// Current scanning file.
@@ -28,6 +28,7 @@ namespace Domain
             CurrentFile = path;
             await Task.Run(() => res = ScanDirectory(path));
             watch.Stop();
+            CurrentFile = string.Empty;
             res.ExecutionTime = TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds);
 
             return res;

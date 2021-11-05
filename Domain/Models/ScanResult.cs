@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Domain
+namespace Domain.Models
 {
     /// <summary>
     /// Result of scan.
