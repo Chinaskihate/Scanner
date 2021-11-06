@@ -49,7 +49,7 @@ namespace API.Models
         {
             if (!_tasks.ContainsKey(id))
             {
-                throw new ArgumentException($"Task {id} doesn't exist.");
+                throw new ArgumentException($"Scan {id} doesn't exist.");
             }
 
             Task<ScanResult> currTask = _tasks[id];

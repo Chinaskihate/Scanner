@@ -85,8 +85,15 @@ namespace CMD
         /// <returns> Message. </returns>
         static async Task<string> ProcessCreateScanCommand(string path)
         {
-            int id = await CreateScan(path);
-            return $"Scan task was created with ID: {id}";
+            try
+            {
+                int id = await CreateScan(path);
+                return $"Scan was created with ID: {id}";
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
         }
 
         /// <summary>
