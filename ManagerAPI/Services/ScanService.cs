@@ -16,7 +16,7 @@ namespace ManagerAPI.Services
             _managerAPIHttpClientFactory = managerAPIHttpClientFactory;
         }
 
-        public async Task<int> CreateTask(string path)
+        public async Task<int> CreateScan(string path)
         {
             using (ManagerAPIHttpClient client = _managerAPIHttpClientFactory.CreateHttpClient())
             {
