@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace CMD
 {
+    /// <summary>
+    /// Type of command.
+    /// </summary>
     enum CommandType
     {
         CreateScan,
@@ -24,7 +27,7 @@ namespace CMD
                 switch (ParseCommandType(args[0]))
                 {
                     case CommandType.CreateScan:
-                        Console.WriteLine(await ProcessCreateScanCommand(args[1]));;
+                        Console.WriteLine(await ProcessCreateScanCommand(args[1])); ;
                         break;
                     case CommandType.GetScanStatus:
                         Console.WriteLine(await GetScanStatus(args[1]));
@@ -35,22 +38,39 @@ namespace CMD
             {
                 PrintIncorrectCommandMessage();
             }
+
+            Console.ReadLine();
         }
 
+        /// <summary>
+        /// Get scan status.
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
         private static async Task<string> GetScanStatus(string str)
         {
             int id;
-            if (int.TryParse(str, out id) && id >= 0)
+            try
             {
-                ScanStatus status = await _scanService.GetTaskById(id);
-                return status.Report;
+                if (int.TryParse(str, out id) && id >= 0)
+                {
+                    ScanStatus status = await _scanService.GetScanStatusById(id);
+                    return status.Report;
+                }
+                else
+                {
+                    return "Scan id have to be integer at least 0.";
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return "Scan id have to be integer at least 0.";
+                return ex.Message;
             }
         }
 
+        /// <summary>
+        /// Print incorrect command message.
+        /// </summary>
         static void PrintIncorrectCommandMessage()
         {
             Console.WriteLine($"Incorrect command!{Environment.NewLine}" +
@@ -58,18 +78,33 @@ namespace CMD
                     $"Or: status <scan id>");
         }
 
+        /// <summary>
+        /// Process create scan command.
+        /// </summary>
+        /// <param name="path"> Path to directory. </param>
+        /// <returns> Message. </returns>
         static async Task<string> ProcessCreateScanCommand(string path)
         {
             int id = await CreateScan(path);
             return $"Scan task was created with ID: {id}";
         }
 
+        /// <summary>
+        /// Create scan.
+        /// </summary>
+        /// <param name="path"> Path to directory. </param>
+        /// <returns> Scan id. </returns>
         static async Task<int> CreateScan(string path)
         {
             int id = await _scanService.CreateScan(path);
             return id;
         }
 
+        /// <summary>
+        /// Parse command type.
+        /// </summary>
+        /// <param name="str"> String. </param>
+        /// <returns> Command type. </returns>
         static CommandType ParseCommandType(string str)
         {
             if (str.ToLower() == "scan")

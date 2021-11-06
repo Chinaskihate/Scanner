@@ -2,7 +2,7 @@
   "profiles": {
     "CMD": {
       "commandName": "Project",
-      "commandLineArgs": "status 2"
+      "commandLineArgs": "status 1"
     }
   }
 }

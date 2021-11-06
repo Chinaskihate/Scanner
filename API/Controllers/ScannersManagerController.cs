@@ -13,6 +13,11 @@ namespace API.Controllers
     {
         private static ScannersManager _scannersManager = new ScannersManager();
 
+        /// <summary>
+        /// Get status of scan.
+        /// </summary>
+        /// <param name="id"> Id of scan. </param>
+        /// <returns> Action result. </returns>
         [HttpGet("get-scan-status")]
         public IActionResult GetScanStatus([FromQuery] int id)
         {
@@ -26,6 +31,11 @@ namespace API.Controllers
             }
         }
 
+        /// <summary>
+        /// Create new scan.
+        /// </summary>
+        /// <param name="path"> Path to directory. </param>
+        /// <returns> Action result. </returns>
         [HttpGet("create-scan")]
         public IActionResult CreateScan([FromQuery] string path)
         {
